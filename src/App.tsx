@@ -5,15 +5,42 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, ShieldCheck, Lock, Zap, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+  const TIMER_DURATION = 600; // 10 minutes em segundos
+  const STORAGE_KEY = 'upsell_timer_end';
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const storedEndTime = localStorage.getItem(STORAGE_KEY);
+    if (storedEndTime) {
+      const remaining = Math.floor((parseInt(storedEndTime, 10) - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return TIMER_DURATION;
+  });
 
   useEffect(() => {
+    const storedEndTimeStr = localStorage.getItem(STORAGE_KEY);
+    let endTime: number;
+    
+    if (storedEndTimeStr) {
+      endTime = parseInt(storedEndTimeStr, 10);
+    } else {
+      endTime = Date.now() + TIMER_DURATION * 1000;
+      localStorage.setItem(STORAGE_KEY, endTime.toString());
+    }
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      const remaining = Math.floor((endTime - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setTimeLeft(0);
+        clearInterval(timer);
+      } else {
+        setTimeLeft(remaining);
+      }
     }, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -239,21 +266,36 @@ export default function App() {
             ⏰ DECIDE AGORA!
           </motion.h3>
           
-          {/* GARANTIA */}
+          {/* GARANTIA & SEGURANÇA */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-[#10b981] text-white p-6 rounded-xl mb-8 text-left shadow-lg"
+            className="bg-[#1f2937] border border-[#10b981]/30 p-6 rounded-xl mb-8 text-left shadow-lg"
           >
-            <h4 className="m-0 mb-3 text-[clamp(18px,4vw,20px)] font-bold flex items-center gap-2">
-              <span className="text-2xl">✅</span> GARANTIA TOTAL:
-            </h4>
-            <div className="text-[clamp(16px,3vw,18px)] leading-relaxed font-medium">
-              • Garantia 15 dias total<br/>
-              • Acesso imediato via Hotmart<br/>
-              • 1-Click (sem formulários!)
+            <div className="flex items-center gap-3 mb-4">
+              <ShieldCheck className="text-[#10b981] w-8 h-8 shrink-0" />
+              <h4 className="m-0 text-[clamp(18px,4vw,20px)] font-bold text-white">
+                RISCO ZERO: Garantia de 15 Dias
+              </h4>
             </div>
+            <p className="text-[#d1d5db] text-[clamp(14px,3vw,16px)] mb-5 leading-relaxed">
+              Adiciona o treinamento agora. Se achares que as aulas não melhoraram os teus cocktails, devolvemos 100% do valor deste upgrade. O risco está todo do nosso lado.
+            </p>
+            <ul className="space-y-3 text-[clamp(14px,3vw,16px)] text-[#d1d5db] font-medium">
+              <li className="flex items-start gap-3">
+                <Lock className="w-5 h-5 text-[#10b981] shrink-0 mt-0.5" /> 
+                <span>Pagamento 100% seguro processado pela <strong>Hotmart</strong></span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Zap className="w-5 h-5 text-[#f59e0b] shrink-0 mt-0.5" /> 
+                <span><strong>Acesso imediato</strong> à área de membros no teu email</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-[#10b981] shrink-0 mt-0.5" /> 
+                <span>Compra com <strong>1-Click</strong> (sem preencher dados novamente)</span>
+              </li>
+            </ul>
           </motion.div>
 
           {/* WIDGET HOTMART */}
@@ -268,14 +310,58 @@ export default function App() {
         </div>
       </section>
 
-      {/* FOOTER P.S. */}
-      <footer className="bg-[#111827] py-12 px-5 border-t border-white/5">
-        <div className="max-w-[600px] mx-auto text-center">
-          <p className="text-[clamp(18px,4vw,24px)] text-[#d1d5db] italic leading-relaxed">
+      {/* FOOTER P.S. & SEGURANÇA */}
+      <footer className="bg-[#111827] pt-16 pb-8 px-5 border-t border-white/5">
+        <div className="max-w-[800px] mx-auto text-center">
+          <p className="text-[clamp(18px,4vw,24px)] text-[#d1d5db] italic leading-relaxed mb-16 max-w-[600px] mx-auto">
             P.S.: Receitas sem técnica = drinks amadores. <br/>
             Técnica sem receitas = inútil. <br/>
             <strong className="text-[#10b981] font-bold not-italic block mt-2">Juntos = IMPRESSIONANTE!</strong>
           </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-white/10 pt-12 mb-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="bg-[#1f2937] p-4 rounded-full">
+                <Lock className="w-8 h-8 text-[#10b981]" />
+              </div>
+              <h5 className="text-white font-bold text-lg">Pagamento Seguro</h5>
+              <p className="text-[#9ca3af] text-sm leading-relaxed">
+                Ambiente criptografado e processamento 100% seguro pela Hotmart.
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center gap-3">
+              <div className="bg-[#1f2937] p-4 rounded-full">
+                <Zap className="w-8 h-8 text-[#f59e0b]" />
+              </div>
+              <h5 className="text-white font-bold text-lg">Acesso Imediato</h5>
+              <p className="text-[#9ca3af] text-sm leading-relaxed">
+                Começa agora mesmo. Recebes o acesso no teu email logo após a compra.
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center gap-3">
+              <div className="bg-[#1f2937] p-4 rounded-full">
+                <ShieldCheck className="w-8 h-8 text-[#10b981]" />
+              </div>
+              <h5 className="text-white font-bold text-lg">Garantia de 15 Dias</h5>
+              <p className="text-[#9ca3af] text-sm leading-relaxed">
+                Risco zero. Satisfação garantida ou o teu dinheiro de volta.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-[#6b7280] text-xs space-y-4 max-w-3xl mx-auto leading-relaxed">
+            <p>
+              Este site não faz parte do site do Facebook ou da Meta Platforms, Inc. Além disso, este site NÃO é endossado pelo Facebook de nenhuma maneira. FACEBOOK é uma marca comercial da META PLATFORMS, INC.
+            </p>
+            <p>
+              Aviso Legal: Os resultados podem variar de pessoa para pessoa. O sucesso na preparação dos cocktails depende da dedicação e prática das técnicas ensinadas no treinamento.
+            </p>
+            <p className="pt-4 border-t border-white/5">
+              © {new Date().getFullYear()} Manual Cocktails. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
